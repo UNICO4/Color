@@ -1,2 +1,3 @@
 免费游戏随便玩，觉得不错可以请我喝奶茶
-![• Discord  常规  阿杜](https://github.com/user-attachments/assets/434de1a1-91e8-4228-8867-8e78d4e70652)
+
+![谢谢](https://github.com/user-attachments/assets/3e08864c-6ddd-4169-8e8d-e157495530a9)
