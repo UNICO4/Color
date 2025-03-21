@@ -45,11 +45,11 @@
             display: flex;
             justify-content: center;
             margin-bottom: 20px;
-            gap: 10px; /* 控制栏色块间距 */
+            gap: 10px;
         }
 
         .color-picker.disabled {
-            opacity: 0.3; /* 更灰的非回合方控制栏 */
+            opacity: 0.3;
             pointer-events: none;
         }
 
@@ -57,18 +57,18 @@
             width: 40px;
             height: 40px;
             cursor: pointer;
-            border: 2px solid white; /* 白色描边 */
-            border-radius: 50%; /* 圆形色块 */
-            transition: transform 0.2s ease, box-shadow 0.2s ease; /* 动画效果 */
+            border: 2px solid white;
+            border-radius: 50%;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
         .color:hover {
-            transform: scale(1.1); /* 鼠标划过时放大 */
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* 添加阴影 */
+            transform: scale(1.1);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
         }
 
         .color:active {
-            transform: scale(0.9); /* 点击时缩小 */
+            transform: scale(0.9);
         }
 
         .color.disabled {
@@ -77,17 +77,39 @@
         }
 
         .grid {
-            display: grid;
-            gap: 2px;
-            margin-bottom: 20px;
-            justify-content: center; /* 网格居中 */
+      display: grid;
+      grid-template-columns: repeat(10, 40px);
+      grid-template-rows: repeat(10, 40px);
+      gap: 2px;
+      margin-bottom: 20px;
+      /* 色板边距 */
+    }
+
+    .cell {
+      width: 40px;
+      height: 40px;
+      border: 2px solid #FFFFFF;
+      border-radius: 10%;
+      cursor: pointer;
+      /* 色板样式 */
+    }
+
+
+        /* 添加缩放动画 */
+        @keyframes scale {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(1);
+            }
         }
 
-        .cell {
-            width: 40px;
-            height: 40px;
-            border: 1px solid #000;
-            cursor: pointer;
+        .cell.scale {
+            animation: scale 0.3s ease-in-out;
         }
 
         .player-turn {
@@ -112,8 +134,8 @@
         }
 
         .winner-popup h2 {
-            font-size: 1.8em; /* 标题字号更大 */
-            color: green; /* 标题颜色为绿色 */
+            font-size: 1.8em;
+            color: green;
             margin-bottom: 10px;
         }
 
@@ -127,16 +149,16 @@
             padding: 10px 20px;
             font-size: 1em;
             cursor: pointer;
-            background-color: #6B5B95; /* 按钮填色 */
+            background-color: #6B5B95;
             color: white;
             border: none;
-            border-radius: 5px; /* 圆角矩形 */
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 柔和投影 */
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             transition: background-color 0.3s ease;
         }
 
         .winner-popup button:hover {
-            background-color: #5a4a7d; /* 按钮悬停效果 */
+            background-color: #5a4a7d;
         }
     </style>
 </head>
@@ -186,16 +208,16 @@
         const winnerPopup = document.getElementById('winner-popup');
         const winnerTitle = document.getElementById('winner-title');
         const winnerScore = document.getElementById('winner-score');
-        const colors = ['#FF6F61', '#6B5B95', '#88B04B', '#FFA500', '#92A8D1']; // 更鲜艳的颜色
+        const colors = ['#FF6F61', '#6B5B95', '#88B04B', '#FFA500', '#92A8D1'];
         let gridColors = [];
-        let currentPlayer = 1; // 当前玩家（1 或 2）
+        let currentPlayer = 1;
         let gameOver = false;
         let player1Score = 0;
         let player2Score = 0;
-        let lastUsedColor = null; // 上一个回合使用的颜色
-        let player1Cells = new Set(); // 玩家 1 控制的色块
-        let player2Cells = new Set(); // 玩家 2 控制的色块
-        let gridSize = 10; // 默认网格大小
+        let lastUsedColor = null;
+        let player1Cells = new Set();
+        let player2Cells = new Set();
+        let gridSize = 10;
 
         // 初始化网格
         function initGrid(size) {
@@ -217,17 +239,16 @@
             }
 
             // 设置玩家 1 和玩家 2 的起始点
-            const player1Start = 0; // 玩家 1 起始点（左上角）
+            const player1Start = 0;
             gridColors[player1Start] = 'player1';
             grid.children[player1Start].style.backgroundColor = '#FF6F61';
             player1Cells.add(player1Start);
 
-            const player2Start = size * size - 1; // 玩家 2 起始点（右下角）
+            const player2Start = size * size - 1;
             gridColors[player2Start] = 'player2';
             grid.children[player2Start].style.backgroundColor = '#92A8D1';
             player2Cells.add(player2Start);
 
-            // 初始化分数
             player1Score = 1;
             player2Score = 1;
         }
@@ -237,14 +258,21 @@
             const currentPlayerCells = currentPlayer === 1 ? player1Cells : player2Cells;
             const opponentCells = currentPlayer === 1 ? player2Cells : player1Cells;
 
-            // 从当前玩家控制的所有色块开始扩展
             const queue = Array.from(currentPlayerCells);
             const visited = new Set(queue);
 
             while (queue.length > 0) {
                 const index = queue.shift();
+                const cell = grid.children[index];
+
+                // 添加缩放动画
+                cell.classList.add('scale');
+                cell.addEventListener('animationend', () => {
+                    cell.classList.remove('scale');
+                }, { once: true });
+
                 gridColors[index] = color;
-                grid.children[index].style.backgroundColor = color;
+                cell.style.backgroundColor = color;
 
                 const neighbors = getNeighbors(index);
                 for (const neighbor of neighbors) {
@@ -252,24 +280,18 @@
                         if (gridColors[neighbor] === color || gridColors[neighbor] === gridColors[index]) {
                             visited.add(neighbor);
                             queue.push(neighbor);
-                            currentPlayerCells.add(neighbor); // 添加到当前玩家的控制区域
-                            opponentCells.delete(neighbor); // 从对手的控制区域移除
+                            currentPlayerCells.add(neighbor);
+                            opponentCells.delete(neighbor);
                         }
                     }
                 }
             }
 
-            // 更新分数
             player1Score = player1Cells.size;
             player2Score = player2Cells.size;
-
-            // 记录上一个回合使用的颜色
             lastUsedColor = color;
-
-            // 禁用对手的上次选择颜色
             disableLastUsedColor();
 
-            // 检查游戏是否结束
             if (isGameOver()) {
                 gameOver = true;
                 const winner = player1Score > player2Score ? '玩家 1' : '玩家 2';
@@ -277,7 +299,6 @@
                 return;
             }
 
-            // 切换玩家
             switchPlayer();
         }
 
@@ -317,7 +338,6 @@
             currentPlayer = currentPlayer === 1 ? 2 : 1;
             playerTurnDisplay.textContent = `玩家 ${currentPlayer} 的回合`;
 
-            // 切换控制栏状态
             if (currentPlayer === 1) {
                 player1Picker.classList.remove('disabled');
                 player2Picker.classList.add('disabled');
@@ -360,16 +380,16 @@
             let size;
             switch (mode) {
                 case 'lightning':
-                    size = 5; // 闪电战：5x5
+                    size = 5;
                     break;
                 case 'casual':
-                    size = 10; // 休闲战：10x10
+                    size = 10;
                     break;
                 case 'endurance':
-                    size = 15; // 持久战：15x15
+                    size = 15;
                     break;
                 default:
-                    size = 10; // 默认 10x10
+                    size = 10;
             }
             initGrid(size);
         }
@@ -397,7 +417,7 @@
             });
         });
 
-        // 重置按钮（可选）
+        // 重置按钮
         const resetButton = document.createElement('button');
         resetButton.textContent = '重新开始';
         resetButton.style.marginTop = '20px';
