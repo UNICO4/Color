@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>色彩泛滥 3.0</title>
+    <title>色彩泛滥 3.0（WebApp）</title>
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#272A36">
     <style>
         body {
             margin: 0;
@@ -22,7 +25,6 @@
         }
         .mode-selector {
             margin-bottom: 10px; /*下边距*/
-
         }
         .mode-selector button {
             padding: 10px 16px;
@@ -77,7 +79,6 @@
             display: flex;
             justify-content: center; /* 居中对齐 */
             align-items: center;
-
         }
         .player-name-on{ /* 反方玩家名字容器 */
             width: 200px;
@@ -212,7 +213,6 @@
             align-items: center;
             box-sizing: border-box;
             padding: 10px;
-
         }
         .score-box { /*分数方框*/
             display: flex;
@@ -358,6 +358,13 @@
             </div>
         </div>
         <button class="winner-popup-button" onclick="closeWinnerPopup()">开始游戏</button>
+    </div>
+  
+    <!-- 安装提示 -->
+    <div id="installPrompt" style="display: none; position: fixed; bottom: 20px; right: 20px; background: #434659; color: white; padding: 10px; border-radius: 10px; z-index: 1000;">
+      <p>安装色彩泛滥应用?</p>
+      <button id="installButton" style="background: #8E6FD4; color: white; border: none; padding: 5px 10px; border-radius: 5px; margin-right: 10px;">安装</button>
+      <button id="dismissInstall" style="background: #272A36; color: white; border: none; padding: 5px 10px; border-radius: 5px;">稍后</button>
     </div>
   
     <script>
@@ -706,6 +713,73 @@
         document.addEventListener('selectstart', function(e) {
             e.preventDefault();
         });
+        
+        // 注册Service Worker
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js').then(registration => {
+              console.log('ServiceWorker registration successful');
+            }).catch(err => {
+              console.log('ServiceWorker registration failed: ', err);
+            });
+          });
+        }
+        
+        // 安装提示
+        let deferredPrompt;
+        const installPrompt = document.getElementById('installPrompt');
+        const installButton = document.getElementById('installButton');
+        const dismissInstall = document.getElementById('dismissInstall');
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+          e.preventDefault();
+          deferredPrompt = e;
+          installPrompt.style.display = 'block';
+        });
+        
+        installButton.addEventListener('click', () => {
+          installPrompt.style.display = 'none';
+          deferredPrompt.prompt();
+          deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+              console.log('User accepted install prompt');
+            }
+            deferredPrompt = null;
+          });
+        });
+        
+        dismissInstall.addEventListener('click', () => {
+          installPrompt.style.display = 'none';
+        });
+        
+        // 离线检测
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+        
+        function updateOnlineStatus() {
+          if (!navigator.onLine) {
+            showOfflineMessage();
+          }
+        }
+        
+        function showOfflineMessage() {
+          const offlineMessage = document.createElement('div');
+          offlineMessage.style.position = 'fixed';
+          offlineMessage.style.bottom = '20px';
+          offlineMessage.style.left = '20px';
+          offlineMessage.style.backgroundColor = '#FF5252';
+          offlineMessage.style.color = 'white';
+          offlineMessage.style.padding = '10px';
+          offlineMessage.style.borderRadius = '5px';
+          offlineMessage.style.zIndex = '1000';
+          offlineMessage.textContent = '您已离线，部分功能可能不可用';
+          
+          document.body.appendChild(offlineMessage);
+          
+          setTimeout(() => {
+            document.body.removeChild(offlineMessage);
+          }, 5000);
+        }
     </script>
 </body>
 </html>
