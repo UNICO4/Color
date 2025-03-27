@@ -3,10 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>色彩泛滥 3.0（WebApp）</title>
-    <!-- Web App Manifest -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#272A36">
+    <title>色彩泛滥 3.2</title>
+  <!-- 图标链接放在这里 -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+  
     <style>
         body {
             margin: 0;
@@ -197,6 +200,17 @@
             flex-direction: column;
             justify-content: space-between;
         }
+        /* 添加遮罩层样式 */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 99;
+        }
         .winner-title {
             font-size: 22pt;
             color: #51E087;
@@ -260,7 +274,7 @@
             width: 20px;
             height: 20px;
             cursor: pointer;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="m10,20C3.33,20,0,16.67,0,10S3.33,0,10,0s10,3.33,10,10-3.33,10-10,10Zm.41-14.47c-.17-.55-.75-.87-1.31-.7-.13.04-.25.1-.35.19-.15.12-.83.88-1.54,1.71-.16-.05-.32-.08-.49-.08h-2.09c-.78,0-1.42.62-1.43,1.4v3.51c0,.78.65,1.41,1.43,1.4h2.09c.17,0,.34-.03.49-.09.73.85,1.41,1.63,1.52,1.72.47.37,1.15.28,1.52-.19.08-.1.14-.22.18-.35.34-1.49.53-3.02.56-4.55-.01-1.35-.21-2.68-.59-3.97h0Zm2.85,2.11c-.23-.54-.73-.72-.99-.47-.25.31-.29.74-.11,1.1.45,1.05.45,2.23,0,3.28-.18.36-.13.78.11,1.1.26.25.76.08.99-.47.63-1.45.63-3.09,0-4.54h0Zm2.15-.74c-.13-.32-.33-.6-.59-.81-.05-.03-.1-.06-.15-.08-.05-.02-.1-.02-.15-.02-.1,0-.2.06-.25.15-.14.21-.2.46-.19.72,0,.07,0,.13.01.2s.02.13.03.2c.03.13.07.26.13.39.64,1.38.64,2.97,0,4.35-.06.12-.1.25-.14.38-.12.38-.06.79.17,1.11.06.08.16.14.27.14.03,0,.05,0,.08,0,.08-.01.16-.05.23-.1.26-.2.46-.47.57-.78.41-.94.61-1.96.59-2.99,0-.98-.2-1.95-.6-2.84h0s0,0,0,0Z"/></svg>');
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23272A36"><path d="m10,20C3.33,20,0,16.67,0,10S3.33,0,10,0s10,3.33,10,10-3.33,10-10,10Zm.41-14.47c-.17-.55-.75-.87-1.31-.7-.13.04-.25.1-.35.19-.15.12-.83.88-1.54,1.71-.16-.05-.32-.08-.49-.08h-2.09c-.78,0-1.42.62-1.43,1.4v3.51c0,.78.65,1.41,1.43,1.4h2.09c.17,0,.34-.03.49-.09.73.85,1.41,1.63,1.52,1.72.47.37,1.15.28,1.52-.19.08-.1.14-.22.18-.35.34-1.49.53-3.02.56-4.55-.01-1.35-.21-2.68-.59-3.97h0Zm2.85,2.11c-.23-.54-.73-.72-.99-.47-.25.31-.29.74-.11,1.1.45,1.05.45,2.23,0,3.28-.18.36-.13.78.11,1.1.26.25.76.08.99-.47.63-1.45.63-3.09,0-4.54h0Zm2.15-.74c-.13-.32-.33-.6-.59-.81-.05-.03-.1-.06-.15-.08-.05-.02-.1-.02-.15-.02-.1,0-.2.06-.25.15-.14.21-.2.46-.19.72,0,.07,0,.13.01.2s.02.13.03.2c.03.13.07.26.13.39.64,1.38.64,2.97,0,4.35-.06.12-.1.25-.14.38-.12.38-.06.79.17,1.11.06.08.16.14.27.14.03,0,.05,0,.08,0,.08-.01.16-.05.23-.1.26-.2.46-.47.57-.78.41-.94.61-1.96.59-2.99,0-.98-.2-1.95-.6-2.84h0s0,0,0,0Z"/></svg>');
             background-size: contain;
             background-repeat: no-repeat;
         }
@@ -344,6 +358,9 @@
         </div>
     </div>
   
+    <!-- 遮罩层 -->
+    <div class="overlay" id="overlay"></div>
+  
     <!-- 新获胜弹窗 -->
     <div class="winner-popup-container" id="winner-popup">
         <h2 class="winner-title" id="winner-title">🎉色彩泛滥🎉</h2>
@@ -358,14 +375,7 @@
             </div>
         </div>
         <button class="winner-popup-button" onclick="closeWinnerPopup()">开始游戏</button>
-    </div>
-  
-    <!-- 安装提示 -->
-    <div id="installPrompt" style="display: none; position: fixed; bottom: 20px; right: 20px; background: #434659; color: white; padding: 10px; border-radius: 10px; z-index: 1000;">
-      <p>安装色彩泛滥应用?</p>
-      <button id="installButton" style="background: #8E6FD4; color: white; border: none; padding: 5px 10px; border-radius: 5px; margin-right: 10px;">安装</button>
-      <button id="dismissInstall" style="background: #272A36; color: white; border: none; padding: 5px 10px; border-radius: 5px;">稍后</button>
-    </div>
+  </div>
   
     <script>
         const grid = document.getElementById('grid');
@@ -382,6 +392,7 @@
         const player2Value = document.getElementById('player2-value');
         const player1ScoreBox = document.getElementById('player1-score-box');
         const player2ScoreBox = document.getElementById('player2-score-box');
+        const overlay = document.getElementById('overlay');
         const colors = ['#4798FF', '#FF91C4', '#51E087', '#8E6FD4', '#FFD526'];
 
         // Web Audio API 音效
@@ -406,7 +417,7 @@
             
             oscillator.type = 'sine';
             oscillator.frequency.value = 800;
-            gainNode.gain.value = 0.1;
+            gainNode.gain.value = 1;
             
             oscillator.connect(gainNode);
             gainNode.connect(audioContext.destination);
@@ -416,25 +427,67 @@
             oscillator.stop(audioContext.currentTime + 0.1);
         }
         
-        function playWinSound() {
+        // 添加按钮音效（与颜色选择音效不同）
+        function playButtonSound() {
             if (!soundEnabled || !audioContext) return;
             
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
             
-            oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
-            oscillator.frequency.exponentialRampToValueAtTime(880, audioContext.currentTime + 0.5);
-            
-            gainNode.gain.value = 0.1;
-            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 1);
+            oscillator.type = 'triangle';
+            oscillator.frequency.value = 500;
+            gainNode.gain.value = 1;
             
             oscillator.connect(gainNode);
             gainNode.connect(audioContext.destination);
             
             oscillator.start();
-            oscillator.stop(audioContext.currentTime + 1);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.2);
+            oscillator.stop(audioContext.currentTime + 0.2);
         }
+        
+        function playWinSound() {
+            if (!soundEnabled || !audioContext) return;
+  const ctx = new AudioContext();
+  const now = ctx.currentTime;
+  
+  // 三个快速音符
+  const notes = [
+    { freq: 659.25, time: 0 },   // E5
+    { freq: 783.99, time: 0.05 }, // G5
+    { freq: 1046.5, time: 0.1 }   // C6
+  ];
+  
+  notes.forEach(note => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    osc.type = "square";
+    osc.frequency.value = note.freq;
+    
+    gain.gain.setValueAtTime(0.7, now + note.time);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + note.time + 0.08);
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now + note.time);
+    osc.stop(now + note.time + 0.08);
+  });
+  
+  // 短促鼓点
+  const kick = ctx.createOscillator();
+  const kickGain = ctx.createGain();
+  kick.type = "sine";
+  kick.frequency.setValueAtTime(150, now);
+  kick.frequency.exponentialRampToValueAtTime(50, now + 0.1);
+  kickGain.gain.setValueAtTime(0.8, now);
+  kickGain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+  
+  kick.connect(kickGain);
+  kickGain.connect(ctx.destination);
+  kick.start();
+  kick.stop(now + 0.1);
+}
 
         let gridColors = [];
         let currentPlayer = 1;
@@ -635,17 +688,23 @@
                 player1Value.classList.remove('winner-color');
             }
             
-            winnerPopup.style.display = 'flex'; // 使用flex布局确保垂直排列
+            // 显示遮罩层和弹窗
+            overlay.style.display = 'block';
+            winnerPopup.style.display = 'flex';
         }
 
         // 关闭获胜弹窗
         function closeWinnerPopup() {
+            overlay.style.display = 'none';
             winnerPopup.style.display = 'none';
             resetGame();
         }
 
         // 重置游戏
         function resetGame() {
+            if (soundEnabled) {
+                playButtonSound();
+            }
             grid.innerHTML = '';
             gridColors = [];
             currentPlayer = 1;
@@ -660,6 +719,9 @@
 
         // 开始游戏
         function startGame(mode) {
+            if (soundEnabled) {
+                playButtonSound();
+            }
             let size;
             switch (mode) {
                 case 'lightning':
@@ -707,79 +769,15 @@
         soundToggle.addEventListener('click', () => {
             soundEnabled = !soundEnabled;
             soundToggle.classList.toggle('muted', !soundEnabled);
+            if (soundEnabled) {
+                playButtonSound();
+            }
         });
         
         // 初始禁用文本选择
         document.addEventListener('selectstart', function(e) {
             e.preventDefault();
         });
-        
-        // 注册Service Worker
-        if ('serviceWorker' in navigator) {
-          window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js').then(registration => {
-              console.log('ServiceWorker registration successful');
-            }).catch(err => {
-              console.log('ServiceWorker registration failed: ', err);
-            });
-          });
-        }
-        
-        // 安装提示
-        let deferredPrompt;
-        const installPrompt = document.getElementById('installPrompt');
-        const installButton = document.getElementById('installButton');
-        const dismissInstall = document.getElementById('dismissInstall');
-        
-        window.addEventListener('beforeinstallprompt', (e) => {
-          e.preventDefault();
-          deferredPrompt = e;
-          installPrompt.style.display = 'block';
-        });
-        
-        installButton.addEventListener('click', () => {
-          installPrompt.style.display = 'none';
-          deferredPrompt.prompt();
-          deferredPrompt.userChoice.then((choiceResult) => {
-            if (choiceResult.outcome === 'accepted') {
-              console.log('User accepted install prompt');
-            }
-            deferredPrompt = null;
-          });
-        });
-        
-        dismissInstall.addEventListener('click', () => {
-          installPrompt.style.display = 'none';
-        });
-        
-        // 离线检测
-        window.addEventListener('online', updateOnlineStatus);
-        window.addEventListener('offline', updateOnlineStatus);
-        
-        function updateOnlineStatus() {
-          if (!navigator.onLine) {
-            showOfflineMessage();
-          }
-        }
-        
-        function showOfflineMessage() {
-          const offlineMessage = document.createElement('div');
-          offlineMessage.style.position = 'fixed';
-          offlineMessage.style.bottom = '20px';
-          offlineMessage.style.left = '20px';
-          offlineMessage.style.backgroundColor = '#FF5252';
-          offlineMessage.style.color = 'white';
-          offlineMessage.style.padding = '10px';
-          offlineMessage.style.borderRadius = '5px';
-          offlineMessage.style.zIndex = '1000';
-          offlineMessage.textContent = '您已离线，部分功能可能不可用';
-          
-          document.body.appendChild(offlineMessage);
-          
-          setTimeout(() => {
-            document.body.removeChild(offlineMessage);
-          }, 5000);
-        }
     </script>
 </body>
 </html>
