@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>色彩泛滥 3.4 webapp</title>
+    <title>色彩泛滥-对战版</title>
+    <!-- 版本3.6 2024.03.28更新 -->
     <!-- 图标链接放在这里 -->
     <link rel="apple-touch-icon" sizes="180x180" href="https://unico4.github.io/Color/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="https://unico4.github.io/Color/favicon-32x32.png">
@@ -13,9 +14,17 @@
     <link rel="manifest" href="https://unico4.github.io/Color/site.webmanifest">
   
     <style>
-        body {
+        /* 修复1: 禁用页面滚动但不影响元素显示 */
+        html, body {
             margin: 0;
             padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            position: fixed;
+        }
+        
+        body {
             background-color: #272A36;
             color: white;
             font-family: Arial, sans-serif;
@@ -23,15 +32,18 @@
             -webkit-user-select: none;
             touch-action: manipulation;
         }
+        
         .game-container {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: space-between;
             height: 100vh;
+            overflow: hidden;
         }
+        
         .mode-selector {
-            margin-bottom: 10px; /*下边距*/
+            margin-bottom: 10px;
         }
         .mode-selector button {
             padding: 10px 16px;
@@ -47,7 +59,7 @@
         .mode-selector button:hover {
             background-color: #8E6FD4;
         } 
-        .opponent-panel { /* 反方玩家面板背景 */
+        .opponent-panel {
             width: 100%;
             height: 24vh;
             background-color: #434659;
@@ -58,7 +70,7 @@
             justify-content: end;
             margin: 0px;
         }
-        .player-panel { /* 正方玩家面板背景 */
+        .player-panel {
             width: 100%;
             height: 24vh;
             background-color: #434659;
@@ -68,57 +80,64 @@
             align-items: center;
             justify-content: start;
             margin: 0px;
-            position: relative; /* 为音效按钮定位 */
+            position: relative;
         }
-        .button-container-on { /* 反方玩家控制按钮容器 */
+        .button-container-on {
             width: 410px;
             height: 90px;
             background-color: #272A36;
             border-radius: 20px;
             display: flex;
-            justify-content: center; /* 居中对齐 */
+            justify-content: center;
             align-items: center;
         }
-        .button-container-down { /* 正方玩家控制按钮容器 */
+        .button-container-down {
             width: 410px;
             height: 90px;
             background-color: #272A36;
             border-radius: 20px;
             display: flex;
-            justify-content: center; /* 居中对齐 */
+            justify-content: center;
             align-items: center;
         }
-        .player-name-on{ /* 反方玩家名字容器 */
+        .player-name-on{
             width: 200px;
             height: 20px;
             background-color: #272A36;
             border-radius: 0 0 20px 20px;
             text-align: center;
             font-size: 8pt;
-            margin-bottom: 2vh; /*下边距*/
-            display: flex; /* 设置为 flex 布局 */
-            align-items: flex-start; /* 文字对齐到顶部 */
-            justify-content: center; /* 水平居中 */
+            margin-bottom: 2vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
         }
-        .player-name-down { /* 正方玩家名字容器 */
+        .player-name-down {
             width: 200px;
             height: 20px;
             background-color: #272A36;
             border-radius: 20px 20px 0 0;
             text-align: center;
             font-size: 8pt;
-            margin-top: 2vh; /*上边距*/
-            display: flex; /* 设置为 flex 布局 */
-            align-items: flex-end; /* 文字对齐到底部 */
-            justify-content: center; /* 水平居中 */
+            margin-top: 2vh;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
         }
         .color-picker {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 20px; /* 按钮之间的间距 */
+            gap: 20px;
         }
         .color-picker.disabled {
+            opacity: 0.1;
+            pointer-events: none;
+        }
+        .color-picker.disabled .color {
+            opacity: 1; /* 确保在禁用面板中所有颜色统一显示 */
+        }
+        .color-picker:not(.disabled) .color.disabled {
             opacity: 0.1;
             pointer-events: none;
         }
@@ -138,27 +157,23 @@
         .color:active {
             transform: scale(0.9);
         }
-        .color.disabled {/* 禁用色 */
-            opacity: 0.1;
-            pointer-events: none;
-        }
-        .grid-parent-container { /* 网格容器 */
+        .grid-parent-container {
             background-color: white;
             border-radius: 4px;
             border: 1px solid #FFFFFF;
             display: flex;
             justify-content: center;
             align-items: center;
-            max-height: 50vh; /* 最大高度为视窗高度的50% */
-            margin: 4vh 0; /* 上下边距各4% */
+            max-height: 50vh;
+            margin: 4vh 0;
         }
 
-        .grid { /* 网格 */
+        .grid {
             display: grid;
             justify-content: center;
             align-items: center;
         }
-        .cell { /* 网格单元 */
+        .cell {
             width: 100%;
             height: 100%;
             border: 1px solid #FFFFFF;
@@ -166,7 +181,6 @@
             cursor: pointer;
             box-sizing: border-box;
         }
-        /* 添加缩放动画 */
         @keyframes scale {
             0% {
                 transform: scale(1);
@@ -186,7 +200,6 @@
             font-weight: bold;
             margin-bottom: 10px;
         }
-        /* 新获胜弹窗样式 */
         .winner-popup-container {
             display: none;
             position: fixed;
@@ -202,11 +215,9 @@
             padding: 20px;
             box-sizing: border-box;
             text-align: center;
-            display: flex;
             flex-direction: column;
             justify-content: space-between;
         }
-        /* 添加遮罩层样式 */
         .overlay {
             display: none;
             position: fixed;
@@ -223,7 +234,7 @@
             margin-top: 10px;
             margin-bottom: 10px;
         }
-        .score-container { /*分数容器*/
+        .score-container {
             width: 100%;
             height: 160px;
             background-color: #515163;
@@ -234,16 +245,16 @@
             box-sizing: border-box;
             padding: 10px;
         }
-        .score-box { /*分数方框*/
+        .score-box {
             display: flex;
             flex-direction: column;
             align-items: center;
         }
-        .score-label { /*分数标签*/
+        .score-label {
             font-size: 16pt;
             margin-bottom: 12px;
         }
-        .score-value { /*分数值*/
+        .score-value {
             width: 120px;
             height: 80px;
             background-color: #373745;
@@ -273,7 +284,6 @@
         .winner-popup-button:active {
             transform: scale(1.1);
         }
-        /* 音效按钮样式 */
         .sound-toggle {
             position: absolute;
             top: 2vh;
@@ -289,7 +299,6 @@
         .sound-toggle.muted {
             background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23272A36"><path d="m10,0C3.33,0,0,3.33,0,10s3.33,10,10,10,10-3.33,10-10S16.67,0,10,0Zm.43,14.06c-.17.57-.78.9-1.35.72-.13-.04-.24-.1-.35-.18-.11-.09-.79-.87-1.52-1.72-.16.06-.33.09-.49.09h-2.09c-.78,0-1.42-.62-1.43-1.4v-3.51c0-.78.65-1.41,1.43-1.4h2.09c.17,0,.33.03.49.08.71-.83,1.39-1.59,1.54-1.71.45-.36,1.11-.29,1.47.16.08.1.15.22.19.35.38,1.29.57,2.63.59,3.98-.03,1.53-.22,3.05-.56,4.55h0Zm5.97-2.64c.26.26.26.68,0,.94-.26.26-.68.26-.94,0l-1.41-1.41-1.41,1.41c-.25.27-.67.29-.94.04s-.29-.67-.04-.94h0s.03-.03.04-.04h0s1.41-1.41,1.41-1.41l-1.41-1.41c-.26-.26-.26-.68,0-.94,0,0,0,0,0,0h0s0,0,0,0c.26-.26.68-.26.94,0l1.41,1.41,1.41-1.41c.27-.25.69-.24.95.04.24.26.24.65,0,.91l-1.41,1.41,1.41,1.41h0Z"/></svg>');
         }
-        /* 重新开始按钮样式 - 与模式切换按钮相同 */
         .restart-button {
             padding: 10px 16px;
             font-size: 1em;
@@ -305,7 +314,6 @@
         .restart-button:hover {
             background-color: #8E6FD4;
         }
-        /* 玩家名字高亮样式 */
         .active-player {
             color: white;
         }
@@ -355,7 +363,7 @@
                 —— 正方玩家 ——
           </div>
           <div class="button-container-down">
-            <div class="color-picker disabled" id="player2-picker"> <!-- 正方控制栏，初始禁用 -->
+            <div class="color-picker disabled" id="player2-picker">
                 <div class="color" data-color="#4798FF" style="background-color: #4798FF;"></div>
                 <div class="color" data-color="#FF91C4" style="background-color: #FF91C4;"></div>
                 <div class="color" data-color="#51E087" style="background-color: #51E087;"></div>
@@ -383,7 +391,7 @@
                 <div class="score-value" id="player2-value">0</div>
             </div>
         </div>
-        <button class="winner-popup-button" onclick="closeWinnerPopup()">开始游戏</button>
+        <button class="winner-popup-button" onclick="closeWinnerPopup()">再来一局</button>
   </div>
   
     <script>
@@ -404,15 +412,24 @@
         const overlay = document.getElementById('overlay');
         const colors = ['#4798FF', '#FF91C4', '#51E087', '#8E6FD4', '#FFD526'];
 
-        // Web Audio API 音效
+        // 修复2: 音频上下文恢复功能
         let audioContext;
         let soundEnabled = true;
         
         function initAudio() {
             try {
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // 添加页面可见性变化监听器
+                document.addEventListener('visibilitychange', () => {
+                    if (document.visibilityState === 'visible' && audioContext.state === 'suspended') {
+                        audioContext.resume().then(() => {
+                            console.log('音频上下文已恢复');
+                        });
+                    }
+                });
             } catch (e) {
-                console.error('Web Audio API is not supported in this browser');
+                console.error('浏览器不支持Web Audio API');
                 soundEnabled = false;
                 soundToggle.classList.add('muted');
             }
@@ -436,67 +453,70 @@
             oscillator.stop(audioContext.currentTime + 0.1);
         }
         
-        // 添加按钮音效（与颜色选择音效不同）
         function playButtonSound() {
             if (!soundEnabled || !audioContext) return;
             
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.type = 'triangle';
-            oscillator.frequency.value = 500;
-            gainNode.gain.value = 1;
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            oscillator.start();
-            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.2);
-            oscillator.stop(audioContext.currentTime + 0.2);
-        }
+ const ctx = new AudioContext();
+  const now = ctx.currentTime;
+  
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  
+  osc.type = "sine";
+  osc.frequency.value = 1567.98; // G6
+  
+  gain.gain.setValueAtTime(0.8, now);
+  gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+  
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  
+  osc.start();
+  osc.stop(now + 0.15);
+}
         
         function playWinSound() {
             if (!soundEnabled || !audioContext) return;
-  const ctx = new AudioContext();
-  const now = ctx.currentTime;
-  
-  // 三个快速音符
-  const notes = [
-    { freq: 659.25, time: 0 },   // E5
-    { freq: 783.99, time: 0.05 }, // G5
-    { freq: 1046.5, time: 0.1 }   // C6
-  ];
-  
-  notes.forEach(note => {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    
-    osc.type = "square";
-    osc.frequency.value = note.freq;
-    
-    gain.gain.setValueAtTime(0.7, now + note.time);
-    gain.gain.exponentialRampToValueAtTime(0.01, now + note.time + 0.08);
-    
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start(now + note.time);
-    osc.stop(now + note.time + 0.08);
-  });
-  
-  // 短促鼓点
-  const kick = ctx.createOscillator();
-  const kickGain = ctx.createGain();
-  kick.type = "sine";
-  kick.frequency.setValueAtTime(150, now);
-  kick.frequency.exponentialRampToValueAtTime(50, now + 0.1);
-  kickGain.gain.setValueAtTime(0.8, now);
-  kickGain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-  
-  kick.connect(kickGain);
-  kickGain.connect(ctx.destination);
-  kick.start();
-  kick.stop(now + 0.1);
-}
+            const ctx = new AudioContext();
+            const now = ctx.currentTime;
+            
+            // 三个快速音符
+            const notes = [
+                { freq: 659.25, time: 0 },   // E5
+                { freq: 783.99, time: 0.05 }, // G5
+                { freq: 1046.5, time: 0.1 }   // C6
+            ];
+            
+            notes.forEach(note => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                
+                osc.type = "square";
+                osc.frequency.value = note.freq;
+                
+                gain.gain.setValueAtTime(0.7, now + note.time);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + note.time + 0.08);
+                
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(now + note.time);
+                osc.stop(now + note.time + 0.08);
+            });
+            
+            // 短促鼓点
+            const kick = ctx.createOscillator();
+            const kickGain = ctx.createGain();
+            kick.type = "sine";
+            kick.frequency.setValueAtTime(150, now);
+            kick.frequency.exponentialRampToValueAtTime(50, now + 0.1);
+            kickGain.gain.setValueAtTime(0.8, now);
+            kickGain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+            
+            kick.connect(kickGain);
+            kickGain.connect(ctx.destination);
+            kick.start();
+            kick.stop(now + 0.1);
+        }
 
         let gridColors = [];
         let currentPlayer = 1;
@@ -508,12 +528,11 @@
         let player2Cells = new Set();
         let gridSize = 10;
 
-        // 初始化网格.网格单元尺寸
+        // 初始化网格
         function initGrid(size) {
             gridSize = size;
             grid.innerHTML = '';
             
-            // 计算单元格大小，确保网格整体不超过最大高度
             const maxCellSize = Math.floor((window.innerHeight * 0.4) / size);
             const cellSize = Math.min(40, maxCellSize);
             
@@ -532,7 +551,7 @@
                 grid.appendChild(cell);
             }
 
-            // 设置玩家 1 和玩家 2 的起始点
+            // 设置玩家起始点
             const player1Start = 0;
             gridColors[player1Start] = 'player1';
             grid.children[player1Start].style.backgroundColor = '#FFD526';
@@ -606,7 +625,7 @@
             switchPlayer();
         }
 
-        // 获取相邻单元格的索引
+        // 获取相邻单元格
         function getNeighbors(index) {
             const neighbors = [];
             const row = Math.floor(index / gridSize);
@@ -622,14 +641,18 @@
 
         // 禁用对手的上次选择颜色
         function disableLastUsedColor() {
+            // 只在当前玩家回合处理禁用色
             const opponentPicker = currentPlayer === 1 ? player2Picker : player1Picker;
-            opponentPicker.querySelectorAll('.color').forEach(colorDiv => {
-                if (colorDiv.getAttribute('data-color') === lastUsedColor) {
-                    colorDiv.classList.add('disabled');
-                } else {
-                    colorDiv.classList.remove('disabled');
-                }
+            
+            // 先移除所有禁用状态
+            opponentPicker.querySelectorAll('.color').forEach(color => {
+                color.classList.remove('disabled');
             });
+            
+            // 然后只禁用上回合使用的颜色
+            if (lastUsedColor) {
+                opponentPicker.querySelector(`.color[data-color="${lastUsedColor}"]`).classList.add('disabled');
+            }
         }
 
         // 检查游戏是否结束
@@ -642,14 +665,13 @@
             currentPlayer = currentPlayer === 1 ? 2 : 1;
 
             if (currentPlayer === 1) {
-                player1Picker.classList.remove('disabled');  // 启用反方控制栏
-                player2Picker.classList.add('disabled');     // 禁用正方控制栏
+                player1Picker.classList.remove('disabled');
+                player2Picker.classList.add('disabled');
             } else {
-                player1Picker.classList.add('disabled');     // 禁用反方控制栏
-                player2Picker.classList.remove('disabled');  // 启用正方控制栏
+                player1Picker.classList.add('disabled');
+                player2Picker.classList.remove('disabled');
             }
             
-            // 更新玩家名字颜色
             updatePlayerNames();
         }
         
@@ -674,7 +696,6 @@
             player1Value.textContent = score1;
             player2Value.textContent = score2;
             
-            // 设置获胜方样式
             if (winner === '反方玩家') {
                 player1Label.classList.add('winner-color');
                 player1Label.classList.remove('loser-color');
@@ -697,7 +718,6 @@
                 player1Value.classList.remove('winner-color');
             }
             
-            // 显示遮罩层和弹窗
             overlay.style.display = 'block';
             winnerPopup.style.display = 'flex';
         }
@@ -723,6 +743,12 @@
             lastUsedColor = null;
             player1Cells = new Set();
             player2Cells = new Set();
+            
+            // 重置所有颜色选择按钮的状态
+            document.querySelectorAll('.color').forEach(color => {
+                color.classList.remove('disabled');
+            });
+            
             initGrid(gridSize);
         }
 
@@ -751,10 +777,10 @@
         // 初始化音频
         initAudio();
 
-        // 默认开始休闲战
+        // 默认开始休闲战（不再默认显示弹窗）
         startGame('casual');
 
-        // 玩家 1 的控制栏事件监听
+        // 玩家1控制栏事件
         player1Picker.querySelectorAll('.color').forEach(colorDiv => {
             colorDiv.addEventListener('click', () => {
                 if (!gameOver) {
@@ -764,7 +790,7 @@
             });
         });
 
-        // 玩家 2 的控制栏事件监听
+        // 玩家2控制栏事件
         player2Picker.querySelectorAll('.color').forEach(colorDiv => {
             colorDiv.addEventListener('click', () => {
                 if (!gameOver) {
@@ -783,9 +809,12 @@
             }
         });
         
-        // 防止触摸事件导致页面缩放
+        // 修复1: 增强的触摸事件处理
         document.addEventListener('touchmove', function(e) {
-            if (e.scale !== 1) { e.preventDefault(); }
+            // 只允许在游戏网格区域滚动（如果需要）
+            if (!e.target.closest('.grid-parent-container')) {
+                e.preventDefault();
+            }
         }, { passive: false });
         
         // 防止双击缩放
