@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>色彩泛滥-对战版</title>
-    <!-- 版本3.6 2024.03.28更新 -->
+    <!-- 版本4.0 2024.04.17更新 -->
     <!-- 图标链接放在这里 -->
     <link rel="apple-touch-" sizes="180x180" href="https://unico4.github.io/Color/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="https://unico4..io/Color/favicon-32x32.png">
@@ -176,8 +176,8 @@
         .cell {
             width: 100%;
             height: 100%;
-            border: 1px solid #FFFFFF;
-            border-radius: 10%;
+            border: 0.01px solid #FFFFFF;/* 网格描边 */
+            border-radius: 6%;
             cursor: pointer;
             box-sizing: border-box;
         }
@@ -333,9 +333,9 @@
         <!-- 反方操作模块 -->
         <div class="opponent-panel">
           <div class="mode-selector">
-            <button onclick="startGame('lightning')">闪电战 (5x5)</button>
-            <button onclick="startGame('casual')">休闲战 (10x10)</button>
-            <button onclick="startGame('endurance')">持久战 (15x15)</button>
+            <button onclick="startGame('lightning')">闪电战 (15x15)</button>
+            <button onclick="startGame('casual')">休闲战 (25x25)</button>
+            <button onclick="startGame('endurance')">持久战 (45x45)</button>
           </div>
           <div class="button-container-on">
             <div class="color-picker" id="player1-picker">
@@ -371,8 +371,10 @@
                 <div class="color" data-color="#FFD526" style="background-color: #FFD526;"></div>
             </div>
           </div>
-          <button class="restart-button" onclick="resetGame()">重新开始</button>
-        </div>
+        <div>
+    <button class="restart-button" onclick="window.location.href='https://unico4.github.io/MAIDPUNK/'">回到主页</button>
+    <button class="restart-button" onclick="resetGame()">重新开始</button>
+  </div>
     </div>
   
     <!-- 遮罩层 -->
@@ -526,7 +528,7 @@
         let lastUsedColor = null;
         let player1Cells = new Set();
         let player2Cells = new Set();
-        let gridSize = 10;
+        let gridSize = 15;
 
         // 初始化网格
         function initGrid(size) {
@@ -752,7 +754,7 @@
             initGrid(gridSize);
         }
 
-        // 开始游戏
+        // 开始游戏，网格数量 
         function startGame(mode) {
             if (soundEnabled) {
                 playButtonSound();
@@ -760,16 +762,16 @@
             let size;
             switch (mode) {
                 case 'lightning':
-                    size = 5;
+                    size = 15;  // 闪电战网格数
                     break;
                 case 'casual':
-                    size = 10;
+                    size = 25;  // 休闲战网格数
                     break;
                 case 'endurance':
-                    size = 15;
+                    size = 45;  // 持久战网格数
                     break;
                 default:
-                    size = 10;
+                    size = 15;
             }
             initGrid(size);
         }
